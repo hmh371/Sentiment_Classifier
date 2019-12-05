@@ -22,17 +22,17 @@ class VoteClassifier(ClassifierI):
     def __init__(self, *classifiers):
         self._classifiers = classifiers
 
-    def classify(self, features):
+    def classify(self, features, time_analysis):
         votes = []
         times = []
         for c in self._classifiers:
-            start_t = time.clock()
+            if time_analysis: start_t = time.clock()
             v = c.classify(features)
-            end_t = time.clock()
-            times.append(end_t - start_t)
+            if time_analysis: 
+                end_t = time.clock()
+                times.append(end_t - start_t)
             votes.append(v)
         votes.append(mode(votes))
-        #print(times)
         return votes, times
 
     def confidence(self, features):
@@ -126,11 +126,11 @@ def sentiment(text):
     feats = find_features(text)
     return voted_classifier.classify(feats),voted_classifier.confidence(feats)
 
-def sentiment_file(file):
+def sentiment_file(file, time_analysis):
     text = open(file,"r", encoding='iso-8859-1').read()
     words = word_tokenize(text)
     feats = {}
     for w in word_features:
         feats[w] = (w in words)
-    return voted_classifier.classify(feats)#,voted_classifier.confidence(feats)
+    return voted_classifier.classify(feats, time_analysis)#,voted_classifier.confidence(feats)
 

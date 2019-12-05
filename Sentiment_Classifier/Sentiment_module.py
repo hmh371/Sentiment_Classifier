@@ -16,6 +16,7 @@ from sklearn.svm import SVC, LinearSVC, NuSVC
 from nltk.classify import ClassifierI
 from statistics import mode
 from nltk.tokenize import word_tokenize
+import time
 
 class VoteClassifier(ClassifierI):
     def __init__(self, *classifiers):
@@ -23,17 +24,24 @@ class VoteClassifier(ClassifierI):
 
     def classify(self, features):
         votes = []
+        times = []
         for c in self._classifiers:
+            start_t = time.clock()
             v = c.classify(features)
+            end_t = time.clock()
+            times.append(end_t - start_t)
             votes.append(v)
-        return mode(votes)
+        votes.append(mode(votes))
+        #print(times)
+        return votes, times
 
     def confidence(self, features):
         votes = []
+        votes_re = []
         for c in self._classifiers:
             v = c.classify(features)
             votes.append(v)
-        print(votes)
+        #print(votes)
         choice_votes = votes.count(mode(votes))
         conf = choice_votes / len(votes)
         return conf
@@ -76,8 +84,11 @@ open_file.close()
 open_file = open("pickled_models/MNB_classifier.pickle", "rb")
 MNB_classifier = pickle.load(open_file, encoding='iso-8859-1')
 open_file.close()
-
-
+"""
+open_file = open("pickled_models/randomForest_classifier.pickle", "rb")
+randomForest_classifier = pickle.load(open_file, encoding='iso-8859-1')
+open_file.close()
+"""
 open_file = open("pickled_models/BernoulliNB_classifier.pickle", "rb")
 BernoulliNB_classifier = pickle.load(open_file, encoding='iso-8859-1')
 open_file.close()
@@ -105,6 +116,7 @@ voted_classifier = VoteClassifier(
                                   LinearSVC_classifier,
                                   MNB_classifier,
                                   BernoulliNB_classifier,
+                                  #randomForest_classifier,
                                   LogisticRegression_classifier)
 
 
@@ -120,5 +132,5 @@ def sentiment_file(file):
     feats = {}
     for w in word_features:
         feats[w] = (w in words)
-    return voted_classifier.classify(feats),voted_classifier.confidence(feats)
+    return voted_classifier.classify(feats)#,voted_classifier.confidence(feats)
 

@@ -17,7 +17,9 @@ from nltk.classify import ClassifierI
 from statistics import mode
 from nltk.tokenize import word_tokenize
 
-
+from sklearn.ensemble import RandomForestClassifier
+from sklearn import preprocessing
+from sklearn.metrics import classification_report, confusion_matrix
 
 class VoteClassifier(ClassifierI):
     def __init__(self, *classifiers):
@@ -137,7 +139,41 @@ print("MNB_classifier accuracy percent:", (nltk.classify.accuracy(MNB_classifier
 save_classifier = open("pickled_models/MNB_classifier.pickle","wb")
 pickle.dump(MNB_classifier, save_classifier)
 save_classifier.close()
+"""
+############### 3rd Random forest classifier
+training_set_x = []
+training_set_y = []
+for i in range(len(training_set)):
+    (dictx, sy) = training_set[i]
+    training_set_x.extend([list(dictx)])
+    training_set_y.extend([sy])
+    
+le = preprocessing.LabelEncoder()
+for i in range(len(training_set_x)):
+    training_set_x[i] = le.fit_transform(training_set_x[i])
+       
+RF_classifier = RandomForestClassifier(max_depth=2, random_state=0)
+RF_classifier.fit(training_set_x, training_set_y)
+RandomForestClassifier(max_depth=2, random_state=0)
+#print("randomForest_classifier accuracy percent:", (nltk.classify.accuracy(RF_classifier, testing_set))*100)
+testing_set_x = []
+testing_set_y = []
+for i in range(len(testing_set)):
+    (dictx, sy) = testing_set[i]
+    testing_set_x.extend([list(dictx)])
+    testing_set_y.extend([sy])
+    
+le = preprocessing.LabelEncoder()
+for i in range(len(testing_set_x)):
+    testing_set_x[i] = le.fit_transform(testing_set_x[i])
 
+print(classification_report(testing_set_y, RF_classifier.predict(testing_set_x)))
+print(confusion_matrix(testing_set_y, RF_classifier.predict(testing_set_x)))
+
+save_classifier = open("pickled_models/randomForest_classifier.pickle","wb")
+pickle.dump(RF_classifier, save_classifier)
+save_classifier.close()
+"""
 ############### 3rd BernoulliNB classifier
 BernoulliNB_classifier = SklearnClassifier(BernoulliNB())
 BernoulliNB_classifier.train(training_set)
